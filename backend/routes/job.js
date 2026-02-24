@@ -1,11 +1,20 @@
 const express = require("express");
 const Job = require("../models/job.js");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/create", async (req, res) => {
+router.post("/create", authMiddleware, async (req, res) => {
     try {
-        const job = new Job(req.body);
+        if (req.user.role !== "client") {
+            return res.status(403).json({ message: "Only clients can post jobs" });
+        }
+
+        const job = new Job({
+            ...req.body,
+            createdBy: req.user._id
+        });
+
         await job.save();
         res.json(job);
     } catch (err) {
