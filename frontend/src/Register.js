@@ -14,25 +14,45 @@ export default function Register() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const selectRole = (role) => {
+    setForm({ ...form, role });
+  };
+
+  // ✅ Register + Auto Login + Redirect
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      // Register
       await API.post("/auth/register", form);
-      alert("Account created successfully");
-    } catch {
+
+      // Auto login
+      const res = await API.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      const role = res.data.user.role;
+
+      // Redirect based on role
+      if (role === "client") {
+        window.location.href = "/client-dashboard";
+      } else {
+        window.location.href = "/freelancer-dashboard";
+      }
+
+    } catch (err) {
       alert("Registration failed");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
 
-      {/* Background glow */}
-      <div className="absolute w-[450px] h-[450px] bg-purple-500 blur-[140px] opacity-20 rounded-full top-10 right-10"></div>
-      <div className="absolute w-[400px] h-[400px] bg-blue-500 blur-[120px] opacity-20 rounded-full bottom-10 left-10"></div>
-
-      <div className="bg-[#020617] text-white p-10 rounded-2xl shadow-2xl w-[440px] border border-gray-700">
+      <div className="bg-[#020617] text-white p-10 rounded-2xl w-[440px] border border-gray-700 shadow-xl">
 
         <h1 className="text-3xl font-bold text-center mb-2">
           FreelanceHub
@@ -49,17 +69,17 @@ export default function Register() {
             placeholder="Full Name"
             autoComplete="off"
             onChange={handleChange}
-            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg focus:border-blue-500 outline-none"
+            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg"
             required
           />
 
           <input
-            name="email"
             type="email"
+            name="email"
             placeholder="Email Address"
             autoComplete="off"
             onChange={handleChange}
-            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg focus:border-blue-500 outline-none"
+            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg"
             required
           />
 
@@ -69,25 +89,23 @@ export default function Register() {
             placeholder="Password"
             autoComplete="new-password"
             onChange={handleChange}
-            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg focus:border-purple-500 outline-none"
+            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg"
             required
           />
 
-          {/* Role Selection */}
+          {/* ROLE TOGGLE */}
           <div>
             <p className="text-gray-400 mb-2">Join as</p>
 
-            <div className="flex gap-3">
+            <div className="flex bg-[#0f172a] p-1 rounded-lg">
 
               <button
                 type="button"
-                onClick={() =>
-                  setForm({ ...form, role: "freelancer" })
-                }
-                className={`flex-1 p-3 rounded-lg border transition ${
+                onClick={() => selectRole("freelancer")}
+                className={`flex-1 p-3 rounded-lg transition ${
                   form.role === "freelancer"
-                    ? "bg-blue-600 border-blue-600"
-                    : "border-gray-600 hover:bg-gray-800"
+                    ? "bg-blue-600"
+                    : "hover:bg-gray-800"
                 }`}
               >
                 Freelancer
@@ -95,13 +113,11 @@ export default function Register() {
 
               <button
                 type="button"
-                onClick={() =>
-                  setForm({ ...form, role: "client" })
-                }
-                className={`flex-1 p-3 rounded-lg border transition ${
+                onClick={() => selectRole("client")}
+                className={`flex-1 p-3 rounded-lg transition ${
                   form.role === "client"
-                    ? "bg-purple-600 border-purple-600"
-                    : "border-gray-600 hover:bg-gray-800"
+                    ? "bg-purple-600"
+                    : "hover:bg-gray-800"
                 }`}
               >
                 Client

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import API from "./api";
 
 export default function Login() {
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -17,23 +18,28 @@ export default function Login() {
     try {
       const res = await API.post("/auth/login", form);
 
+      // Save auth data
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      alert("Login Successful");
-    } catch {
+      const role = res.data.user.role;
+
+      // Role-based redirect
+      if (role === "client") {
+        window.location.href = "/client-dashboard";
+      } else {
+        window.location.href = "/freelancer-dashboard";
+      }
+
+    } catch (err) {
       alert("Invalid credentials");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
 
-      {/* Background glow */}
-      <div className="absolute w-[450px] h-[450px] bg-blue-500 blur-[140px] opacity-20 rounded-full top-10 left-10"></div>
-      <div className="absolute w-[400px] h-[400px] bg-purple-500 blur-[120px] opacity-20 rounded-full bottom-10 right-10"></div>
-
-      <div className="bg-[#020617] text-white p-10 rounded-2xl shadow-2xl w-[420px] border border-gray-700">
+      <div className="bg-[#020617] text-white p-10 rounded-2xl w-[420px] border border-gray-700 shadow-xl">
 
         <h1 className="text-3xl font-bold text-center mb-2">
           FreelanceHub
@@ -46,12 +52,12 @@ export default function Login() {
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
 
           <input
-            name="email"
             type="email"
+            name="email"
             placeholder="Email Address"
             autoComplete="off"
             onChange={handleChange}
-            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg focus:border-blue-500 outline-none"
+            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg"
             required
           />
 
@@ -61,11 +67,11 @@ export default function Login() {
             placeholder="Password"
             autoComplete="new-password"
             onChange={handleChange}
-            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg focus:border-purple-500 outline-none"
+            className="w-full p-3 bg-[#020617] border border-gray-600 rounded-lg"
             required
           />
 
-          <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-lg font-semibold hover:scale-105 transition">
+          <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-lg font-semibold">
             Sign In
           </button>
 
